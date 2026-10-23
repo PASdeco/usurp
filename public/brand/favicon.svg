@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #F4F2F7; }
+      .crown { fill: url(#gl); stroke: #14111C; stroke-width: 2.5; paint-order: stroke fill; }
+    }
+  </style>
+  <defs>
+    <linearGradient id="gd" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE08A"/>
+      <stop offset="1" stop-color="#B8801F"/>
+    </linearGradient>
+    <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F0B429"/>
+      <stop offset="1" stop-color="#8A5A00"/>
+    </linearGradient>
+  </defs>
+  <rect class="bg" width="64" height="64" fill="#07060B" rx="12"/>
+  <path class="crown"
+    d="M8 50 L4 18 L20 32 L32 10 L44 32 L60 18 L56 50 Z
+       M8 52 L56 52 L56 58 Q56 60 54 60 L10 60 Q8 60 8 58 Z"
+    fill="url(#gd)"
+  />
+</svg>

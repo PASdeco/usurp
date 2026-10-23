@@ -1,0 +1,21 @@
+{
+  "name": "USURP — Steal the Crown",
+  "short_name": "USURP",
+  "description": "A real-time crypto game on Arc. One crown. One holder. Pay to steal it.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07060B",
+  "theme_color": "#F5C451",
+  "icons": [
+    {
+      "src": "/brand/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/brand/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
