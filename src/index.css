@@ -1,0 +1,229 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── USURP Design Tokens ─────────────────────────────────────────────────── */
+
+:root,
+[data-theme="dark"] {
+  --bg:            #07060B;
+  --surface:       #100E17;
+  --surface-2:     #16131F;
+  --surface-3:     #0C0A12;
+  --border:        #2A2636;
+  --border-strong: #4A4558;
+  --ink:           #F4EFE6;
+  --ink-muted:     #A8A3B5;
+  --gold:          #F5C451;
+  --gold-text:     #F5C451;
+  --gold-ink:      #07060B;
+  --ruby:          #D91E48;
+  --ruby-ink:      #FFFFFF;
+  --ok:            #4ADE80;
+  --low:           #F5A524;
+  --empty:         #FF6B7A;
+  --danger:        #FF6B7A;
+  --ring-track:    #2A2636;
+  --hero-glow:     rgba(245, 196, 81, 0.16);
+  --radius-panel:  22px;
+  --font-display:  'Big Shoulders Display', system-ui, sans-serif;
+  --font-body:     'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Menlo', monospace;
+}
+
+[data-theme="light"] {
+  --bg:            #F4F2F7;
+  --surface:       #FFFFFF;
+  --surface-2:     #F0EDF5;
+  --surface-3:     #E9E5F0;
+  --border:        #D8D3E3;
+  --border-strong: #A9A2BD;
+  --ink:           #14111C;
+  --ink-muted:     #5D5870;
+  --gold:          #F0B429;
+  --gold-text:     #8A5A00;
+  --gold-ink:      #14111C;
+  --ruby:          #D91E48;
+  --ruby-ink:      #FFFFFF;
+  --ok:            #17803D;
+  --low:           #A15C00;
+  --empty:         #B3261E;
+  --danger:        #B3261E;
+  --ring-track:    #E2DDEC;
+  --hero-glow:     rgba(240, 180, 41, 0.22);
+}
+
+/* ─── Base ────────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ─── Typography helpers ─────────────────────────────────────────────────── */
+
+.font-display  { font-family: var(--font-display); }
+.font-body     { font-family: var(--font-body); }
+.font-mono     { font-family: var(--font-mono); }
+
+/* ─── Focus rings ────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Scrollbar (dark surfaces) ──────────────────────────────────────────── */
+
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--surface-3); }
+::-webkit-scrollbar-thumb  { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-muted); }
+
+/* ─── Utility: glass panel ───────────────────────────────────────────────── */
+
+.glass-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+/* ─── Utility: tabular numbers ───────────────────────────────────────────── */
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ─── Utility: gold text glow ────────────────────────────────────────────── */
+
+.gold-glow {
+  text-shadow: 0 0 24px rgba(245, 196, 81, 0.55);
+}
+
+/* ─── Utility: ruby glow (steal button) ─────────────────────────────────── */
+
+.ruby-glow {
+  box-shadow:
+    0 0 0 1px var(--ruby),
+    0 0 24px rgba(217, 30, 72, 0.45),
+    0 4px 32px rgba(217, 30, 72, 0.3);
+}
+
+.ruby-glow:hover {
+  box-shadow:
+    0 0 0 1px var(--ruby),
+    0 0 36px rgba(217, 30, 72, 0.6),
+    0 4px 48px rgba(217, 30, 72, 0.45);
+}
+
+/* ─── Hero crown glow ────────────────────────────────────────────────────── */
+
+.crown-glow {
+  filter: drop-shadow(0 0 24px var(--hero-glow)) drop-shadow(0 0 8px rgba(245, 196, 81, 0.4));
+}
+
+/* ─── Screen shake (on steal) ────────────────────────────────────────────── */
+
+@keyframes shake {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  15%  { transform: translate(-5px, 2px) rotate(-1deg); }
+  30%  { transform: translate(5px, -2px) rotate(1deg); }
+  45%  { transform: translate(-4px, 1px) rotate(-0.5deg); }
+  60%  { transform: translate(4px, -1px) rotate(0.5deg); }
+  75%  { transform: translate(-2px, 1px) rotate(-0.3deg); }
+  90%  { transform: translate(2px, -1px) rotate(0.3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.screen-shake {
+  animation: shake 220ms ease-in-out both;
+}
+
+/* ─── Crown pulse (subtle, continuous while holding) ─────────────────────── */
+
+@keyframes crown-pulse {
+  0%, 100% { filter: drop-shadow(0 0 24px var(--hero-glow)) drop-shadow(0 0 8px rgba(245,196,81,0.4)); }
+  50%       { filter: drop-shadow(0 0 40px var(--hero-glow)) drop-shadow(0 0 20px rgba(245,196,81,0.7)); }
+}
+
+.crown-glow {
+  filter: drop-shadow(0 0 24px var(--hero-glow)) drop-shadow(0 0 8px rgba(245, 196, 81, 0.4));
+}
+
+.crown-pulse {
+  animation: crown-pulse 2.8s ease-in-out infinite;
+}
+
+/* ─── Break-even banner fade-in ──────────────────────────────────────────── */
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.break-even-banner {
+  animation: fade-in-up 0.35s ease both;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Explicitly kill game-feel animations */
+  .screen-shake,
+  .crown-pulse,
+  .break-even-banner {
+    animation: none !important;
+  }
+}
+
+/* ─── Responsive helpers ─────────────────────────────────────────────────── */
+
+.hidden-mobile { display: flex !important; }
+.mobile-only   { display: none !important; }
+
+@media (max-width: 700px) {
+  .hidden-mobile { display: none !important; }
+  .mobile-only   { display: flex !important; }
+}
+
+/* ─── Toaster overrides (Sonner) ─────────────────────────────────────────── */
+
+[data-sonner-toaster] [data-styled="true"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--ink) !important;
+  font-family: var(--font-body) !important;
+  border-radius: 14px !important;
+}
