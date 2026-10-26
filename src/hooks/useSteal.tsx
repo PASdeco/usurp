@@ -5,7 +5,9 @@
  * Step 2: steal(maxPrice) on the Usurp contract
  *
  * maxPrice = stealPriceRaw * 101 / 100 (1% slippage buffer).
- * Payments are ERC-20 transferFrom — NOT msg.value (Arc rule).
+ * Payments are ERC-20 transferFrom — NOT msg.value (Arc rule: USDC is native but
+ * the contract uses the ERC-20 interface for deterministic amount handling).
+ * Explorer links use buildTxExplorerUrl(hash, chainId) from onchain-shim.
  */
 
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
