@@ -14,7 +14,7 @@ import { erc20Abi } from 'viem'
 import { toast } from 'sonner'
 import { CHAIN_ID } from '../config'
 import { USURP_ADDRESS, USURP_ABI } from '../lib/contract'
-import { getUsdc, buildTxExplorerUrl } from '../onchain-facts'
+import { getUsdc, buildTxExplorerUrl } from '../onchain-shim'
 import { parseUsurpError } from './useWallet'
 
 const usdcFact = getUsdc(CHAIN_ID)
@@ -78,7 +78,7 @@ export function useSteal(onSuccess?: () => void): UseStealReturn {
       toast.success('Crown stolen!', {
         description: (
           <a
-            href={buildTxExplorerUrl(CHAIN_ID, txHash)}
+            href={buildTxExplorerUrl(txHash)}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: 'var(--gold-text)' }}
