@@ -4,6 +4,10 @@
  * isAdmin: true when connected wallet is the contract owner OR feeAddress.
  * All write actions use wagmi writeContractAsync + toast feedback.
  * Never exposes private keys or seed phrases.
+ *
+ * Pause/unpause intentionally excluded — those functions exist in the contract
+ * but are not surfaced in the UI (see DECISIONS.md D-21).
+ * seedPot uses a two-step approve + seedPot flow (ERC-20 pattern, not msg.value).
  */
 
 import { useCallback } from 'react'
