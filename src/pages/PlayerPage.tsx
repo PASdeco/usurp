@@ -5,7 +5,7 @@
 
 import { useMemo, useState, useEffect } from 'react'
 import { useGameFeed } from '../hooks/useGameFeed'
-import { buildTxExplorerUrl } from '../onchain-facts'
+import { buildTxExplorerUrl } from '../onchain-shim'
 import { CHAIN_ID } from '../config'
 import { MOCK_MODE } from '../lib/mock'
 import { IconLoader, IconExternalLink } from '../components/icons'
@@ -127,7 +127,7 @@ export function PlayerPage({ address, onNavigate }: PlayerPageProps) {
                           {ev.at > 0 ? `${Math.floor((nowMs - ev.at) / 60_000)}m ago` : '—'}
                         </span>
                         {txHash && !MOCK_MODE && (
-                          <a href={buildTxExplorerUrl(CHAIN_ID, txHash)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink-muted)' }}>
+                          <a href={buildTxExplorerUrl(txHash)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink-muted)' }}>
                             <IconExternalLink size={13} />
                           </a>
                         )}
