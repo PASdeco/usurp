@@ -6,7 +6,7 @@ dist/
 contracts/out/
 contracts/cache/
 broadcast/
-lib/
+/lib/
 console.jsonl
 traces.jsonl
 usurp/
