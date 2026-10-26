@@ -1,4 +1,5 @@
 node_modules/
+.agents/
 dist/
 .env
 .env.local
