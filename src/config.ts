@@ -1,6 +1,11 @@
 /**
  * wagmi + ConnectKit configuration for USURP.
- * Set VITE_NETWORK=mainnet to target Arc Mainnet; defaults to Arc Testnet.
+ *
+ * VITE_NETWORK=mainnet  → Arc Mainnet (chain 5042, rpc.mainnet.arc.io)
+ * VITE_NETWORK=testnet  → Arc Testnet (chain 5042002, rpc.testnet.arc.io) [default]
+ *
+ * Arc note: native currency is USDC (18 decimals in native view, 6 in ERC-20 view).
+ * The CONTRACT uses the ERC-20 view (6 decimals). Never mix the two.
  */
 
 import { createConfig, http } from 'wagmi'
