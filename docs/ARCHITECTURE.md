@@ -12,8 +12,8 @@
 │  (Vite + wagmi + ConnectKit)        │
 │                                     │
 │  useGameState  ──────────────────►  │
-│  useGameFeed   ──────────────────►  │  Arc Testnet RPC
-│  useAdmin      ──────────────────►  │  (chain ID 5042002)
+│  useGameFeed   ──────────────────►  │  Arc Mainnet RPC
+│  useAdmin      ──────────────────►  │  (chain ID 5042)
 │  useSteal      ──────────────────►  │
 │  useClaim      ──────────────────►  │
 └─────────────────────────────────────┘
@@ -21,8 +21,8 @@
               ▼
 ┌─────────────────────────────────────┐
 │         Usurp.sol                   │
-│   Arc Testnet                       │
-│   0x5B16a6fd5a2f14D0c4D671bB5A14f9044fdE89e5 │
+│   Arc Mainnet                       │
+│   0xC47cc87cb5fe4EDAe581064045A79074264bC415 │
 │                                     │
 │   USDC ERC-20 (6 dec)               │
 │   0x3600000000000000000000000000000000000000 │
