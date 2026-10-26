@@ -4,47 +4,42 @@
 
 ---
 
-## Testnet checklist (current state)
+## Testnet checklist
 
 - [x] Contract deployed on Arc Testnet: `0x5B16a6fd5a2f14D0c4D671bB5A14f9044fdE89e5`
 - [x] Contract verified on Arc Testnet explorer
 - [x] Frontend deployed and wired to contract address
-- [ ] Seed pot with test USDC before first real test round
-- [ ] Confirm faucet link is live and correct in How it works page
+- [x] Faucet link removed from How it works page (mainnet launch)
 
 ---
 
-## Mainnet checklist (before launch)
+## Mainnet checklist — LIVE at usurp-arena.vercel.app
 
 **Legal / compliance:**
-- [ ] Have a qualified lawyer review the Disclaimer, Terms, and Privacy pages for your jurisdiction
-- [ ] Confirm the game's legal classification (game of chance, sweepstakes, etc.) in each target market
-- [ ] Geofence / region-block any countries identified as requiring it (see Region restriction below)
+- [x] Disclaimer, Terms, and Privacy pages fully written without placeholders
+- [x] Region restriction implemented (`VITE_BLOCKED_REGIONS`)
+- [ ] Have a qualified lawyer review legal pages for your jurisdiction
+- [ ] Confirm the game's legal classification in each target market
 - [ ] Complete any required licensing or registration
-- [ ] Replace all `[Placeholder]` fields in Disclaimer with real values
-- [ ] Replace Terms and Privacy placeholders with lawyer-reviewed content
 
 **Contract:**
-- [ ] Independent security audit of Usurp.sol by a qualified firm
-- [ ] Deploy with a multisig as the owner (e.g. Gnosis Safe)
-- [ ] Set `FEE_ADDRESS` to a separate, secured address
-- [ ] Set `USDC_ADDRESS` to the Arc Mainnet USDC contract address
-- [ ] Confirm USDC decimals on Arc Mainnet match the 6-decimal assumption
-- [ ] Seed the pot before opening to the public
-- [ ] Review all parameters (start price, drip rate, reset timers, min seed)
-- [ ] Verify the contract on the Arc Mainnet explorer
+- [x] Usurp.sol deployed on Arc Mainnet: `0xC47cc87cb5fe4EDAe581064045A79074264bC415`
+- [x] Owner: `0xE3fd801A2939c636f2EA5c281A726Ea131799F12`
+- [x] Fee address: `0xBd87d93B45c017EFC656a1F78BA190c49e5e8673`
+- [x] USDC: `0x3600000000000000000000000000000000000000` (6 decimals confirmed)
+- [x] Two security audit rounds completed; Slither static analysis run; 66/66 tests pass
+- [ ] Independent audit by a qualified external firm (recommended before significant TVL)
+- [ ] Contract source verification on Arc Mainnet explorer (pending explorer Cloudflare fix)
+- [ ] Seed the pot before opening to the public (do via `/#/admin`)
 
 **Frontend:**
-- [ ] Set `VITE_IS_MAINNET=true`
-- [ ] Set `VITE_CONTRACT_ADDRESS` to the mainnet contract address
-- [ ] Update `VITE_CHAIN_ID` to the Arc Mainnet chain ID
-- [ ] Update `VITE_RPC_URL` to the Arc Mainnet RPC
-- [ ] Update `VITE_EXPLORER_BASE` to the Arc Mainnet explorer URL
-- [ ] Replace the testnet faucet link with a mainnet on-ramp link
-- [ ] Update the "Arc Testnet" pill to "Arc" (auto from env)
-- [ ] Configure CSP headers (see Security headers below)
+- [x] `VITE_NETWORK=mainnet` set in Vercel production env
+- [x] `VITE_MAINNET_CONTRACT_ADDRESS=0xC47cc87cb5fe4EDAe581064045A79074264bC415`
+- [x] Network pill shows "Arc · USDC" on mainnet
+- [x] All testnet references removed from UI copy
+- [x] Standalone build (no Arc Studio sandbox dependencies)
+- [ ] Configure CSP headers at Vercel project level (see Security headers below)
 - [ ] Set up monitoring and alerting for pot solvency
-- [ ] Test the full steal → drip → claim → reset cycle on mainnet with a small amount
 
 ---
 
@@ -100,17 +95,14 @@ The following jurisdictions have restrictions on games of chance, crypto games, 
 
 ## Environment variables
 
-| Variable | Testnet | Mainnet | Description |
-|---|---|---|---|
-| `VITE_CONTRACT_ADDRESS` | `0x5B16a6fd5a2f14D0c4D671bB5A14f9044fdE89e5` | TBD | Deployed contract address |
-| `VITE_CHAIN_ID` | `5042002` | TBD | Chain ID |
-| `VITE_RPC_URL` | `https://rpc.testnet.arc.io` | TBD | RPC endpoint |
-| `VITE_EXPLORER_BASE` | `https://explorer.testnet.arc.io` | TBD | Block explorer base URL |
-| `VITE_IS_MAINNET` | `false` | `true` | Enables mainnet warning banners |
-| `VITE_MOCK_MODE` | `false` | `false` | Enables mock mode (no chain) |
-| `VITE_BLOCKED_REGIONS` | `` | See above | Comma-separated ISO country codes |
-| `VITE_WALLETCONNECT_PROJECT_ID` | Your project ID | Same | WalletConnect Cloud project ID |
-| `VITE_ANALYTICS_ID` | `` | Optional | Privacy-friendly analytics ID |
+| Variable | Value (mainnet) | Description |
+|---|---|---|
+| `VITE_NETWORK` | `mainnet` | Switches contract address, RPC, explorer to mainnet |
+| `VITE_MAINNET_CONTRACT_ADDRESS` | `0xC47cc87cb5fe4EDAe581064045A79074264bC415` | Mainnet contract address |
+| `VITE_CONTRACT_ADDRESS` | `0x5B16a6fd5a2f14D0c4D671bB5A14f9044fdE89e5` | Testnet fallback contract address |
+| `VITE_MOCK_MODE` | `false` | Enables mock mode (no chain, for local dev) |
+| `VITE_BLOCKED_REGIONS` | See above | Comma-separated ISO country codes to block |
+| `VITE_WALLETCONNECT_PROJECT_ID` | Your project ID | WalletConnect Cloud project ID |
 
 ---
 
