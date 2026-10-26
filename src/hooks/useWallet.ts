@@ -2,6 +2,11 @@
  * useWallet — central hook for USURP wallet state.
  * Provides: address, shortAddress, isConnected, isWrongChain,
  *           usdcBalance, formattedBalance, and parseUsurpError().
+ *
+ * Arc rule: balance shown is from the ERC-20 view (6 decimals), not useBalance()
+ * which returns the native view (18 decimals). The two values represent the
+ * same pool of USDC but differ by 10^12 — always use the ERC-20 view for display.
+ * Config via onchain-shim (USDC address, chain ID) — no sandbox imports.
  */
 
 import { useAccount, useReadContract, useSwitchChain } from 'wagmi'
