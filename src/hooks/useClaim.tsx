@@ -8,7 +8,7 @@ import { useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { CHAIN_ID } from '../config'
 import { USURP_ADDRESS, USURP_ABI } from '../lib/contract'
-import { buildTxExplorerUrl } from '../onchain-facts'
+import { buildTxExplorerUrl } from '../onchain-shim'
 import { parseUsurpError } from './useWallet'
 
 export type ClaimStep = 'idle' | 'confirming' | 'success' | 'error'
@@ -38,7 +38,7 @@ export function useClaim(onSuccess?: () => void): UseClaimReturn {
       toast.success('Earnings claimed!', {
         description: (
           <a
-            href={buildTxExplorerUrl(CHAIN_ID, hash)}
+            href={buildTxExplorerUrl(hash)}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: 'var(--gold-text)' }}
