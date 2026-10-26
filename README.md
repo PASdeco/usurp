@@ -2,13 +2,13 @@
 
 > A real-time crypto game on Arc. One crown. One holder. Pay to steal it. Earn a drip while you hold.
 
-**[Play on Arc Testnet →](https://i6j8mbfrvxxw0vlycbcg3.preview.studio.arc.io)**
+**[Play on Arc Mainnet →](https://usurp-arena.vercel.app)**
 
 ---
 
 ## What is USURP?
 
-USURP is a king-of-the-hill USDC game on Arc Testnet:
+USURP is a king-of-the-hill USDC game on Arc Mainnet:
 
 - One public crown. One holder at a time.
 - Pay the current price to steal the crown. Each steal costs 20% more (capped at $5.00).
@@ -16,7 +16,7 @@ USURP is a king-of-the-hill USDC game on Arc Testnet:
 - When someone steals from you, you keep everything you earned — but you don't get your steal price back.
 - After 1 hour with no steals (or 10 minutes with an empty pot), the price resets to $0.13.
 
-**This is a game, not an investment. You can lose what you pay. Test funds only on Arc Testnet.**
+**This is a game, not an investment. You can lose what you pay. Real USDC on Arc Mainnet.**
 
 ---
 
@@ -31,7 +31,7 @@ USURP is a king-of-the-hill USDC game on Arc Testnet:
 ### 1. Clone and install
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/PASdeco/usurp.git
 cd usurp
 bun install
 ```
