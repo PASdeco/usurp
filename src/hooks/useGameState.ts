@@ -3,6 +3,7 @@
  * Polls getState() + earnedSoFar() every 5 seconds via wagmi refetchInterval.
  *
  * Arc rule: amounts use the 6-decimal ERC-20 view. Never useBalance().
+ * Chain: Arc Mainnet (5042) or Arc Testnet (5042002) via VITE_NETWORK env var.
  */
 
 import { useReadContract } from 'wagmi'
