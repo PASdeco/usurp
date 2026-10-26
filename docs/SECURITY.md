@@ -1,7 +1,7 @@
 # USURP — Security
 
 > Threat model, known risks, and bot analysis. Last updated: October 2026.
-> **This is an unaudited testnet prototype. Do not deploy to mainnet without a professional audit.**
+> **This contract is live on Arc Mainnet. A professional audit is strongly recommended before significant TVL accumulates.**
 
 ---
 
@@ -12,7 +12,7 @@
 | Internal review (Arc Studio) | Done — 2 findings fixed (see below) |
 | Slither static analysis | Done — 4 false-positive categories documented |
 | Foundry unit + fuzz + invariant tests | Done — 66/66 pass |
-| Independent professional audit | **Not done** — required before mainnet |
+| Independent professional audit | **Not done** — strongly recommended before significant TVL |
 
 ### Findings fixed
 
