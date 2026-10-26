@@ -1,8 +1,8 @@
 # USURP — Steal the Crown
 
-> A real-time crypto game on Arc. One crown. One holder. Pay to steal it. Earn a drip while you hold.
+> A real-time USDC game on Arc Mainnet. One crown. One holder. Pay to steal it. Earn a drip while you hold.
 
-**[Play on Arc Mainnet →](https://usurp-arena.vercel.app)**
+**[Play now →](https://usurp-arena.vercel.app)**
 
 ---
 
@@ -26,7 +26,7 @@ USURP is a king-of-the-hill USDC game on Arc Mainnet:
 
 - [Bun](https://bun.sh) v1.0+ (`curl -fsSL https://bun.sh/install | bash`)
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) (`curl -L https://foundry.paradigm.xyz | bash && foundryup`)
-- A browser wallet (MetaMask or any WalletConnect-compatible wallet)
+- A browser wallet (MetaMask, Rabby, or any WalletConnect-compatible wallet)
 
 ### 1. Clone and install
 
@@ -41,9 +41,9 @@ bun install
 ```bash
 cp docs/ENV_EXAMPLE.md .env
 # Edit .env and fill in:
-#   VITE_CONTRACT_ADDRESS   (use the deployed testnet address below, or deploy your own)
-#   PRIVATE_KEY             (only needed if you want to deploy your own contract)
-#   FEE_ADDRESS             (your wallet address — receives 50% of steal revenue)
+#   VITE_NETWORK=mainnet                   (set to mainnet for production)
+#   VITE_MAINNET_CONTRACT_ADDRESS          (0xC47cc87cb5fe4EDAe581064045A79074264bC415)
+#   VITE_WALLETCONNECT_PROJECT_ID          (get from https://cloud.walletconnect.com)
 ```
 
 ### 3. Run in mock mode (no wallet needed)
@@ -54,20 +54,18 @@ VITE_MOCK_MODE=true bun run dev
 
 Open [http://localhost:5173](http://localhost:5173). The UI is fully interactive with seeded fake data.
 
-### 4. Run against Arc Testnet
+### 4. Run against Arc Mainnet
 
 ```bash
 bun run dev
 ```
 
-Connect MetaMask (or any wallet) to **Arc Testnet**:
-- Network name: Arc Testnet
-- Chain ID: 5042002
-- RPC URL: https://rpc.testnet.arc.io
+Connect your wallet to **Arc Mainnet**:
+- Network name: Arc
+- Chain ID: 5042
+- RPC URL: https://rpc.mainnet.arc.io
 - Currency: USDC
-- Explorer: https://explorer.testnet.arc.io
-
-Get testnet USDC from the "Get test USDC" button in Arc Studio, or from the Arc Testnet faucet.
+- Explorer: https://explorer.arc.io
 
 ---
 
@@ -75,14 +73,14 @@ Get testnet USDC from the "Get test USDC" button in Arc Studio, or from the Arc 
 
 | Field | Value |
 |---|---|
-| **Address** | `0x5B16a6fd5a2f14D0c4D671bB5A14f9044fdE89e5` |
-| **Chain** | Arc Testnet (5042002) |
+| **Address** | `0xC47cc87cb5fe4EDAe581064045A79074264bC415` |
+| **Chain** | Arc Mainnet (chain ID 5042) |
 | **USDC** | `0x3600000000000000000000000000000000000000` |
-| **Explorer** | [View on Arc Explorer](https://explorer.testnet.arc.io/address/0x5b16a6fd5a2f14d0c4d671bb5a14f9044fde89e5) |
-| **Owner** | `0xD0b8aEEdf195499773415323cae517e5b8369F94` |
-| **Fee address** | `0x45c99e421d37eA58a4ba239fE91c69f515cbd27e` |
-| **Status** | Deployed + verified on Arc Testnet |
-| **Audit** | Unaudited testnet prototype |
+| **Explorer** | [View on Arc Explorer](https://explorer.arc.io/address/0xC47cc87cb5fe4EDAe581064045A79074264bC415) |
+| **Owner** | `0xE3fd801A2939c636f2EA5c281A726Ea131799F12` |
+| **Fee address** | `0xBd87d93B45c017EFC656a1F78BA190c49e5e8673` |
+| **Status** | Deployed on Arc Mainnet |
+| **Audit** | Two-round security review; 66 unit + fuzz + invariant tests passing |
 
 ### Run contract tests
 
@@ -96,17 +94,17 @@ bun run contracts:test
 bun run contracts:build
 ```
 
-### Deploy your own contract
+### Deploy your own instance
 
 ```bash
-# Set PRIVATE_KEY and FEE_ADDRESS in .env first
+# Set MAINNET_PRIVATE_KEY, MAINNET_FEE_ADDRESS, and USDC_ADDRESS in .env first
 forge script contracts/script/DeployUsurp.s.sol \
-  --rpc-url https://rpc.testnet.arc.io \
-  --private-key $PRIVATE_KEY \
+  --rpc-url https://rpc.mainnet.arc.io \
+  --private-key $MAINNET_PRIVATE_KEY \
   --broadcast \
   --verify \
   --verifier blockscout \
-  --verifier-url https://explorer.testnet.arc.io/api \
+  --verifier-url https://explorer.arc.io/api \
   -vvvv
 ```
 
@@ -119,7 +117,7 @@ forge script contracts/script/DeployUsurp.s.sol \
 | Frontend | React 18, Vite, TypeScript, Tailwind CSS v3 |
 | Web3 | wagmi v2, viem v2, ConnectKit |
 | Contracts | Solidity 0.8.20, Foundry, OpenZeppelin 5.1.0 |
-| Chain | Arc Testnet (chain ID 5042002) |
+| Chain | Arc Mainnet (chain ID 5042) |
 | Token | USDC ERC-20, 6 decimals |
 | Fonts | Big Shoulders Display, Plus Jakarta Sans, JetBrains Mono |
 | Effects | canvas-confetti, framer-motion |
@@ -138,9 +136,10 @@ usurp/
 │   └── script/DeployUsurp.s.sol    Deploy script (forge script)
 ├── src/
 │   ├── App.tsx                     Root: providers + hash router
-│   ├── config.ts                   wagmi config (Arc Testnet)
+│   ├── config.ts                   wagmi config (Arc Mainnet + Testnet)
+│   ├── onchain-shim.ts             Chain helpers (addresses, Amount, explorer URLs)
 │   ├── lib/
-│   │   ├── contract.ts             ABI + contract address
+│   │   ├── contract.ts             ABI + contract address (mainnet/testnet)
 │   │   └── mock.ts                 Mock game state (VITE_MOCK_MODE)
 │   ├── contexts/
 │   │   ├── GameContext.tsx         Live/mock game state provider
@@ -148,7 +147,7 @@ usurp/
 │   │   └── EffectsContext.tsx      Effects on/off
 │   ├── hooks/
 │   │   ├── useGameState.ts         Live chain reads (5s poll)
-│   │   ├── useGameFeed.ts          Event log (getLogs + watch)
+│   │   ├── useGameFeed.ts          Event log (getLogs polling — Arc mainnet compatible)
 │   │   ├── useGameStats.ts         Best hold + streak from events
 │   │   ├── useSteal.ts             Approve + steal two-step
 │   │   ├── useClaim.ts             Claim earnings
@@ -158,7 +157,7 @@ usurp/
 │   │   ├── useShake.ts             Screen shake
 │   │   └── useEffects.ts           Effects preference
 │   ├── components/
-│   │   ├── Header.tsx              Sticky header
+│   │   ├── Header.tsx              Sticky header (Arc Mainnet network pill)
 │   │   ├── Footer.tsx              Footer nav
 │   │   ├── Logo.tsx                SVG crown + wordmark (dark/light)
 │   │   ├── ThroneScreen.tsx        Main game view
@@ -181,11 +180,13 @@ usurp/
 │       └── NotFoundPage.tsx
 ├── docs/
 │   ├── ARCHITECTURE.md             State machine, accrual math, trust model
+│   ├── CHANGELOG.md                Release history
+│   ├── CONTRIBUTING.md             Dev setup, commit style, PR guide
 │   ├── DECISIONS.md                Technical decisions and open questions
-│   ├── DEPLOY.md                   Testnet + mainnet deployment guide
+│   ├── DEPLOY.md                   Mainnet deployment guide
 │   └── SECURITY.md                 Threat model, bot analysis, known risks
 └── public/
-    ├── brand/                      Favicons, manifest, OG images
+    ├── brand/                      Favicons, manifest
     ├── sitemap.xml
     └── robots.txt
 ```
@@ -196,13 +197,18 @@ usurp/
 
 | Variable | Required | Description |
 |---|---|---|
-| `VITE_CONTRACT_ADDRESS` | No | Contract address (defaults to deployed testnet address) |
+| `VITE_NETWORK` | Yes | `mainnet` for production, omit for testnet |
+| `VITE_MAINNET_CONTRACT_ADDRESS` | Yes (mainnet) | Mainnet contract address |
+| `VITE_CONTRACT_ADDRESS` | No | Testnet contract address fallback |
+| `VITE_WALLETCONNECT_PROJECT_ID` | Yes | WalletConnect project ID |
 | `VITE_MOCK_MODE` | No | `true` = use seeded mock state, no chain needed |
 | `VITE_BLOCKED_REGIONS` | No | Comma-separated ISO 3166-1 alpha-2 codes to block (e.g. `US,GB`) |
-| `PRIVATE_KEY` | Deploy only | Deployer wallet private key |
-| `FEE_ADDRESS` | Deploy only | Wallet that receives 50% builder revenue |
+| `PRIVATE_KEY` | Deploy only | Testnet deployer private key |
+| `FEE_ADDRESS` | Deploy only | Testnet fee wallet address |
+| `MAINNET_PRIVATE_KEY` | Deploy only | Mainnet deployer private key |
+| `MAINNET_FEE_ADDRESS` | Deploy only | Mainnet fee wallet address |
 
-Never commit `PRIVATE_KEY` or `FEE_ADDRESS`. They are in `.gitignore`.
+Never commit any private key or fee address. They are excluded by `.gitignore`.
 
 ---
 
@@ -229,7 +235,6 @@ Never commit `PRIVATE_KEY` or `FEE_ADDRESS`. They are in `.gitignore`.
 - `aria-live="polite"` on live earnings, hold timer, and feed
 - `prefers-reduced-motion`: no shake, no confetti, no pulse when set
 - "Effects: on/off" toggle persisted to localStorage
-- Status never conveyed by color alone (PotHealthChip: icon + label + color)
 - Visible focus rings in both themes
 
 ---
@@ -237,12 +242,16 @@ Never commit `PRIVATE_KEY` or `FEE_ADDRESS`. They are in `.gitignore`.
 ## Docs
 
 - [Architecture](docs/ARCHITECTURE.md) — state machine, accrual math, component tree
-- [Security](docs/SECURITY.md) — threat model, bot analysis, top 5 risks
+- [Security](docs/SECURITY.md) — threat model, bot analysis, top risks
 - [Decisions](docs/DECISIONS.md) — technical choices and open questions
-- [Deploy](docs/DEPLOY.md) — testnet and mainnet deployment guide
+- [Deploy](docs/DEPLOY.md) — mainnet deployment guide
+- [Changelog](docs/CHANGELOG.md) — release history
+- [Contributing](docs/CONTRIBUTING.md) — dev setup and PR guide
 
 ---
 
 ## Disclaimer
 
-Usurp is an experimental game on Arc Testnet. Test funds have no real value. Not financial advice. 18+ only. See [Disclaimer](src/pages/DisclaimerPage.tsx) for full terms.
+USURP is a live game on Arc Mainnet using real USDC. You can lose the funds you play with. This is not financial advice. 18+ only. See the [full disclaimer](https://usurp-arena.vercel.app/#/disclaimer) before playing.
+
+Built with [Arc Studio](https://studio.arc.io)
