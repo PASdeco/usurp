@@ -1,19 +1,18 @@
 /**
  * useGameFeed — reads Stolen, Claimed and RoundReset events.
- * getLogs on mount + useWatchContractEvent for live updates.
+ * Polls via getLogs every 10s (eth_newFilter not supported on Arc RPC).
  */
 
-import { useWatchContractEvent } from 'wagmi'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { CHAIN_ID } from '../config'
-import { USURP_ADDRESS, USURP_ABI } from '../lib/contract'
+import { TARGET_CHAIN } from '../config'
+import { USURP_ADDRESS } from '../lib/contract'
 import type { FeedEvent } from '../lib/mock'
-import { usdcDecimalsFor, Amount } from '../onchain-money'
+import { usdcDecimalsFor, Amount } from '../onchain-shim'
 import { createPublicClient, http, parseAbiItem } from 'viem'
-import { arcTestnet } from 'viem/chains'
 
-const USDC_DECIMALS = usdcDecimalsFor(CHAIN_ID)
+const USDC_DECIMALS = usdcDecimalsFor()
 const MAX_FEED = 50
+const POLL_INTERVAL = 10_000 // 10 seconds
 
 function rawToUsdc(raw: bigint): number {
   return Number(Amount.fromRaw(raw, USDC_DECIMALS).toFixed(6))
@@ -23,9 +22,10 @@ function shortAddr(addr: string): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`
 }
 
+// Use the RPC from TARGET_CHAIN (env-driven: mainnet or testnet)
 const publicClient = createPublicClient({
-  chain: arcTestnet,
-  transport: http('https://rpc.testnet.arc.io'),
+  chain: TARGET_CHAIN,
+  transport: http(TARGET_CHAIN.rpcUrls.default.http[0]),
 })
 
 export interface UseGameFeedReturn {
@@ -36,8 +36,8 @@ export interface UseGameFeedReturn {
 export function useGameFeed(): UseGameFeedReturn {
   const [feed, setFeed] = useState<FeedEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  // Use a ref-based set to deduplicate without triggering re-renders on every event
   const seenIds = useRef(new Set<string>())
+  const lastBlockRef = useRef<bigint>(0n)
 
   const mergeEvents = useCallback((newEvents: FeedEvent[]) => {
     const fresh = newEvents.filter(e => !seenIds.current.has(e.id))
@@ -48,135 +48,110 @@ export function useGameFeed(): UseGameFeedReturn {
     )
   }, [])
 
-  // ── Historical getLogs on mount ────────────────────────────────────────────
+  const fetchLogs = useCallback(async (fromBlock: bigint) => {
+    const [stolenLogs, claimedLogs, resetLogs] = await Promise.all([
+      publicClient.getLogs({
+        address: USURP_ADDRESS,
+        event: parseAbiItem('event Stolen(address indexed newHolder, address indexed prevHolder, uint256 pricePaid, uint256 nextPrice, uint256 round)'),
+        fromBlock,
+        toBlock: 'latest',
+      }),
+      publicClient.getLogs({
+        address: USURP_ADDRESS,
+        event: parseAbiItem('event Claimed(address indexed holder, uint256 amount)'),
+        fromBlock,
+        toBlock: 'latest',
+      }),
+      publicClient.getLogs({
+        address: USURP_ADDRESS,
+        event: parseAbiItem('event RoundReset(uint256 indexed round, uint256 timestamp)'),
+        fromBlock,
+        toBlock: 'latest',
+      }),
+    ])
+
+    const events: FeedEvent[] = []
+
+    for (const log of stolenLogs) {
+      const args = log.args as { newHolder: `0x${string}`; pricePaid: bigint }
+      // Use block timestamp approximation: block * avg_block_time
+      const blockMs = Number(log.blockNumber ?? 0n) * 2000 + 1_700_000_000_000
+      events.push({
+        id: `stolen-${log.transactionHash}-${log.logIndex}`,
+        type: 'steal',
+        actor: shortAddr(args.newHolder),
+        amount: rawToUsdc(args.pricePaid),
+        at: blockMs,
+      })
+    }
+    for (const log of claimedLogs) {
+      const args = log.args as { holder: `0x${string}`; amount: bigint }
+      const blockMs = Number(log.blockNumber ?? 0n) * 2000 + 1_700_000_000_000
+      events.push({
+        id: `claimed-${log.transactionHash}-${log.logIndex}`,
+        type: 'claim',
+        actor: shortAddr(args.holder),
+        amount: rawToUsdc(args.amount),
+        at: blockMs,
+      })
+    }
+    for (const log of resetLogs) {
+      const args = log.args as { timestamp: bigint }
+      events.push({
+        id: `reset-${log.transactionHash}-${log.logIndex}`,
+        type: 'reset',
+        actor: '',
+        at: Number(args.timestamp) * 1000,
+      })
+    }
+
+    return events
+  }, [])
+
+  // ── Initial fetch (last 2000 blocks) ──────────────────────────────────────
   useEffect(() => {
     let cancelled = false
 
-    async function fetchHistory() {
+    async function init() {
       try {
         const latest = await publicClient.getBlockNumber()
+        lastBlockRef.current = latest
         const fromBlock = latest > 2000n ? latest - 2000n : 0n
-
-        const [stolenLogs, claimedLogs, resetLogs] = await Promise.all([
-          publicClient.getLogs({
-            address: USURP_ADDRESS,
-            event: parseAbiItem('event Stolen(address indexed newHolder, address indexed prevHolder, uint256 pricePaid, uint256 nextPrice, uint256 round)'),
-            fromBlock, toBlock: 'latest',
-          }),
-          publicClient.getLogs({
-            address: USURP_ADDRESS,
-            event: parseAbiItem('event Claimed(address indexed holder, uint256 amount)'),
-            fromBlock, toBlock: 'latest',
-          }),
-          publicClient.getLogs({
-            address: USURP_ADDRESS,
-            event: parseAbiItem('event RoundReset(uint256 indexed round, uint256 timestamp)'),
-            fromBlock, toBlock: 'latest',
-          }),
-        ])
-
-        if (cancelled) return
-
-        const events: FeedEvent[] = []
-
-        for (const log of stolenLogs) {
-          const args = log.args as { newHolder: `0x${string}`; pricePaid: bigint }
-          events.push({
-            id: `stolen-${log.transactionHash}-${log.logIndex}`,
-            type: 'steal',
-            actor: shortAddr(args.newHolder),
-            amount: rawToUsdc(args.pricePaid),
-            at: Number(log.blockNumber) * 2000 + 1_700_000_000_000,
-          })
-        }
-        for (const log of claimedLogs) {
-          const args = log.args as { holder: `0x${string}`; amount: bigint }
-          events.push({
-            id: `claimed-${log.transactionHash}-${log.logIndex}`,
-            type: 'claim',
-            actor: shortAddr(args.holder),
-            amount: rawToUsdc(args.amount),
-            at: Number(log.blockNumber) * 2000 + 1_700_000_000_000,
-          })
-        }
-        for (const log of resetLogs) {
-          const args = log.args as { timestamp: bigint }
-          events.push({
-            id: `reset-${log.transactionHash}-${log.logIndex}`,
-            type: 'reset',
-            actor: '',
-            at: Number(args.timestamp) * 1000,
-          })
-        }
-
-        mergeEvents(events)
+        const events = await fetchLogs(fromBlock)
+        if (!cancelled) mergeEvents(events)
       } catch {
-        // RPC unavailable on first load — watch events will fill the feed
+        // RPC unavailable — feed stays empty until next poll
       } finally {
         if (!cancelled) setIsLoading(false)
       }
     }
 
-    void fetchHistory()
+    void init()
     return () => { cancelled = true }
-  }, [mergeEvents])
+  }, [fetchLogs, mergeEvents])
 
-  // ── Live watch events ──────────────────────────────────────────────────────
-  useWatchContractEvent({
-    address: USURP_ADDRESS,
-    abi: USURP_ABI,
-    eventName: 'Stolen',
-    chainId: CHAIN_ID,
-    onLogs(logs) {
-      mergeEvents(logs.map(log => {
-        const args = log.args as { newHolder: `0x${string}`; pricePaid: bigint }
-        return {
-          id: `stolen-${log.transactionHash}-${log.logIndex ?? 0}`,
-          type: 'steal' as const,
-          actor: shortAddr(args.newHolder),
-          amount: rawToUsdc(args.pricePaid),
-          at: Date.now(),
-        }
-      }))
-    },
-  })
+  // ── Polling for new events every 10s ──────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false
 
-  useWatchContractEvent({
-    address: USURP_ADDRESS,
-    abi: USURP_ABI,
-    eventName: 'Claimed',
-    chainId: CHAIN_ID,
-    onLogs(logs) {
-      mergeEvents(logs.map(log => {
-        const args = log.args as { holder: `0x${string}`; amount: bigint }
-        return {
-          id: `claimed-${log.transactionHash}-${log.logIndex ?? 0}`,
-          type: 'claim' as const,
-          actor: shortAddr(args.holder),
-          amount: rawToUsdc(args.amount),
-          at: Date.now(),
-        }
-      }))
-    },
-  })
+    const id = setInterval(async () => {
+      try {
+        const latest = await publicClient.getBlockNumber()
+        const from = lastBlockRef.current > 0n ? lastBlockRef.current + 1n : latest - 10n
+        if (latest < from) return
+        lastBlockRef.current = latest
+        const events = await fetchLogs(from)
+        if (!cancelled) mergeEvents(events)
+      } catch {
+        // swallow polling errors
+      }
+    }, POLL_INTERVAL)
 
-  useWatchContractEvent({
-    address: USURP_ADDRESS,
-    abi: USURP_ABI,
-    eventName: 'RoundReset',
-    chainId: CHAIN_ID,
-    onLogs(logs) {
-      mergeEvents(logs.map(log => {
-        const args = log.args as { timestamp: bigint }
-        return {
-          id: `reset-${log.transactionHash}-${log.logIndex ?? 0}`,
-          type: 'reset' as const,
-          actor: '',
-          at: Number(args.timestamp) * 1000,
-        }
-      }))
-    },
-  })
+    return () => {
+      cancelled = true
+      clearInterval(id)
+    }
+  }, [fetchLogs, mergeEvents])
 
   return { feed, isLoading }
 }
