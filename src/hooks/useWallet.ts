@@ -8,8 +8,8 @@ import { useAccount, useReadContract, useSwitchChain } from 'wagmi'
 import { erc20Abi } from 'viem'
 import { useCallback } from 'react'
 import { CHAIN_ID } from '../config'
-import { getUsdc, buildTxExplorerUrl } from '../onchain-facts'
-import { Amount, usdcDecimalsFor } from '../onchain-money'
+import { getUsdc, buildTxExplorerUrl, usdcDecimalsFor } from '../onchain-shim'
+import { Amount } from '../onchain-shim'
 
 const usdcFact = getUsdc(CHAIN_ID)
 const USDC_ADDRESS = usdcFact?.address as `0x${string}` | undefined
