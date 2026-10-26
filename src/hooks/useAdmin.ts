@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 import { CHAIN_ID } from '../config'
 import { USURP_ADDRESS, USURP_ABI } from '../lib/contract'
 import { useWallet } from './useWallet'
-import { getUsdc } from '../onchain-facts'
+import { getUsdc } from '../onchain-shim'
 
 const USDC_DECIMALS = 6
 const REFETCH = 5_000
@@ -37,7 +37,6 @@ export interface AdminState {
   feeAccruedUsdc: number
   potBalance: bigint
   potBalanceUsdc: number
-  paused: boolean
   minHoldBeforeSteal: bigint
   potLowThresholdIntervals: bigint
   pendingFeeAddress: PendingParam | null
@@ -88,10 +87,6 @@ export function useAdmin() {
     address: USURP_ADDRESS, abi: USURP_ABI, functionName: 'pot',
     chainId: CHAIN_ID, query: { refetchInterval: REFETCH },
   })
-  const { data: pausedRaw } = useReadContract({
-    address: USURP_ADDRESS, abi: USURP_ABI, functionName: 'paused',
-    chainId: CHAIN_ID, query: { refetchInterval: REFETCH },
-  })
   const { data: minHoldRaw } = useReadContract({
     address: USURP_ADDRESS, abi: USURP_ABI, functionName: 'minHoldBeforeSteal',
     chainId: CHAIN_ID, query: { refetchInterval: REFETCH },
@@ -129,7 +124,6 @@ export function useAdmin() {
     feeAccruedUsdc: rawToUsdc((feeAccruedRaw) ?? 0n),
     potBalance: (potRaw) ?? 0n,
     potBalanceUsdc: rawToUsdc((potRaw) ?? 0n),
-    paused: (pausedRaw) ?? false,
     minHoldBeforeSteal: (minHoldRaw) ?? 0n,
     potLowThresholdIntervals: (potLowRaw) ?? 5n,
     pendingFeeAddress: parsePending(pFeeAddr),
@@ -165,9 +159,6 @@ export function useAdmin() {
       throw err
     }
   }, [writeContractAsync])
-
-  const pause   = useCallback(() => call('pause',   [], 'Pause'), [call])
-  const unpause = useCallback(() => call('unpause', [], 'Unpause'), [call])
 
   const withdrawFees = useCallback(
     () => call('withdrawFees', [], 'Withdraw fees'),
@@ -228,8 +219,6 @@ export function useAdmin() {
 
   return {
     adminState,
-    pause,
-    unpause,
     withdrawFees,
     seedPot,
     scheduleFeeAddress,
