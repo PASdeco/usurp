@@ -18,7 +18,7 @@ import { useConfetti } from '../hooks/useConfetti'
 import { useShake } from '../hooks/useShake'
 import { useBreakEvenMilestone } from '../hooks/useBreakEvenMilestone'
 import { useEffectsCtx } from '../contexts/EffectsContext'
-import { getUsdc } from '../onchain-facts'
+import { getUsdc } from '../onchain-shim'
 import { CHAIN_ID } from '../config'
 import { USURP_ADDRESS } from '../lib/contract'
 import { HeroCrown } from './Logo'
@@ -126,14 +126,13 @@ function SkeletonBlock({ w = '100%', h = 20 }: { w?: string | number; h?: number
 // ─── Steal button label ───────────────────────────────────────────────────────
 
 function StealLabel({
-  isConnected, isWrongChain, isLoading, step, stealPrice, paused,
+  isConnected, isWrongChain, isLoading, step, stealPrice,
 }: {
   isConnected: boolean
   isWrongChain: boolean
   isLoading: boolean
   step: string
   stealPrice: number
-  paused: boolean
 }) {
   if (!isConnected) {
     return (
@@ -147,13 +146,6 @@ function StealLabel({
     return (
       <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 26, letterSpacing: '0.06em' }}>
         WRONG NETWORK
-      </span>
-    )
-  }
-  if (paused) {
-    return (
-      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 26, letterSpacing: '0.06em' }}>
-        GAME PAUSED
       </span>
     )
   }
@@ -191,22 +183,31 @@ function useLiveEarnings(
   potBalance: number,
   accrualStart: number,
   isHolder: boolean,
-  isPaused: boolean,
 ) {
-  const [displayed, setDisplayed] = useState(baseEarnings)
-  const baseRef = useRef(baseEarnings)
-  // Sync baseRef whenever chain data updates
-  useEffect(() => { baseRef.current = baseEarnings }, [baseEarnings])
-  // Sync displayed whenever base changes (non-holder, paused, or chain refresh)
-  useEffect(() => {
-    if (!isHolder || potBalance <= 0 || holderStealPrice <= 0 || isPaused) {
-      setDisplayed(baseEarnings)
-    }
-  }, [baseEarnings, isHolder, potBalance, holderStealPrice, isPaused])
+  // frozen when pot is empty — nothing to drip
+  const isFrozen = potBalance <= 0
 
+  const [displayed, setDisplayed] = useState(baseEarnings)
+  const baseRef   = useRef(baseEarnings)
+  const frozenVal = useRef<number>(baseEarnings)
+
+  // Keep frozenVal current while NOT frozen
   useEffect(() => {
-    // When paused: freeze the ticker at the last settled amount from chain
-    if (!isHolder || potBalance <= 0 || holderStealPrice <= 0 || isPaused) return
+    if (!isFrozen) frozenVal.current = displayed
+  })
+
+  // Sync baseRef on every chain read
+  useEffect(() => { baseRef.current = baseEarnings }, [baseEarnings])
+
+  // Accept chain reads when not frozen and no drip conditions
+  useEffect(() => {
+    if (isFrozen) return
+    if (!isHolder || holderStealPrice <= 0) setDisplayed(baseEarnings)
+  }, [baseEarnings, isHolder, holderStealPrice, isFrozen])
+
+  // Ticker — runs only when pot has funds, holder exists, price known
+  useEffect(() => {
+    if (isFrozen || !isHolder || holderStealPrice <= 0) return
 
     const dripPerInterval = holderStealPrice * DRIP_BPS / 10000
     const dripPerMs = dripPerInterval / (DRIP_INTERVAL * 1000)
@@ -215,15 +216,14 @@ function useLiveEarnings(
     const id = setInterval(() => {
       const elapsed = Date.now() - startMs
       const accrued = elapsed * dripPerMs
-      const total = Math.min(baseRef.current + accrued, baseRef.current + potBalance)
-      setDisplayed(total)
+      setDisplayed(Math.min(baseRef.current + accrued, baseRef.current + potBalance))
     }, 250)
 
     return () => clearInterval(id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHolder, potBalance, holderStealPrice, accrualStart, isPaused])
+  }, [isHolder, potBalance, holderStealPrice, accrualStart, isFrozen])
 
-  return displayed
+  return isFrozen ? frozenVal.current : displayed
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -267,13 +267,14 @@ export function ThroneScreen({ onNavigate }: ThroneScreenProps) {
   })
   const currentAllowance = allowanceRaw ?? 0n
 
-  // Hold timer ticks every second — freezes when game is paused
+  // Hold timer ticks every second — freezes when pot is empty
+  const timerFrozen = g.potBalance <= 0
   const [nowMs, setNowMs] = useState(() => Date.now())
   useEffect(() => {
-    if (g.paused) return // do not start a new interval while paused; keep nowMs frozen
+    if (timerFrozen) return
     const id = setInterval(() => setNowMs(Date.now()), 1000)
     return () => clearInterval(id)
-  }, [g.paused])
+  }, [timerFrozen])
 
   const isHolder = isConnected && address
     ? g.holder.toLowerCase() === address.toLowerCase()
@@ -291,7 +292,6 @@ export function ThroneScreen({ onNavigate }: ThroneScreenProps) {
     g.potBalance,
     accrualStart,
     isHolder,
-    g.paused,
   )
 
   // Track previous stealHook.step to detect steal success
@@ -307,7 +307,7 @@ export function ThroneScreen({ onNavigate }: ThroneScreenProps) {
   // Steal handler
   const handleSteal = useCallback(() => {
     if (!isConnected) { openConnectModal(); return }
-    if (!address || isWrongChain || g.paused || stealHook.isLoading) return
+    if (!address || isWrongChain || stealHook.isLoading) return
     if (mockMode) return
     const raw = (g as Partial<LiveGameState>).stealPriceRaw
     if (!raw) return
@@ -323,7 +323,7 @@ export function ThroneScreen({ onNavigate }: ThroneScreenProps) {
 
   const handleRevenge = useCallback(() => { handleSteal() }, [handleSteal])
 
-  const stealDisabled = stealHook.isLoading || isWrongChain || g.paused
+  const stealDisabled = stealHook.isLoading || isWrongChain
 
   return (
     <main
@@ -400,26 +400,6 @@ export function ThroneScreen({ onNavigate }: ThroneScreenProps) {
               </button>
             ))}
           </span>
-        </div>
-      )}
-
-      {/* Paused banner */}
-      {g.paused && (
-        <div
-          role="alert"
-          style={{
-            background: 'rgba(245,196,81,0.12)',
-            border: '1px solid var(--gold)',
-            borderRadius: 12,
-            padding: '10px 16px',
-            marginBottom: 16,
-            fontSize: 13,
-            color: 'var(--gold-text)',
-            fontWeight: 700,
-            textAlign: 'center',
-          }}
-        >
-          The game is currently paused. Steals are disabled. Claims are still available.
         </div>
       )}
 
@@ -578,7 +558,6 @@ export function ThroneScreen({ onNavigate }: ThroneScreenProps) {
             aria-label={
               !isConnected ? 'Connect wallet to steal the crown'
               : isWrongChain ? `Switch to Arc ${import.meta.env.VITE_NETWORK === 'mainnet' ? '' : 'Testnet '}to steal`
-              : g.paused ? 'Game is paused'
               : `Steal the crown for ${fmt2(g.stealPrice)} USDC`
             }
           >
@@ -588,7 +567,6 @@ export function ThroneScreen({ onNavigate }: ThroneScreenProps) {
               isLoading={stealHook.isLoading}
               step={stealHook.step}
               stealPrice={g.stealPrice}
-              paused={g.paused}
             />
           </button>
 
