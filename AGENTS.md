@@ -2,13 +2,13 @@
 
 > Built with Arc Studio — money-powered apps in minutes
 
-A real-time crypto game on Arc Testnet. One crown. One holder. Pay to steal it. Earn a drip while you hold.
+A real-time crypto game on Arc Mainnet. One crown. One holder. Pay to steal it. Earn a drip while you hold.
 
 ---
 
 ## What This App Does
 
-USURP is a king-of-the-hill USDC game on Arc Testnet. Players pay USDC to steal the crown; the price escalates 20% each steal (capped at $5). The holder earns a slow drip from a shared pot for as long as they hold. When dethroned, the previous holder keeps whatever they earned. Phase 2 (not built yet) adds Usurp Arena — a 60-second AI-judged duel mode.
+USURP is a king-of-the-hill USDC game on Arc Mainnet. Players pay USDC to steal the crown; the price escalates 20% each steal (capped at $5). The holder earns a slow drip from a shared pot for as long as they hold. When dethroned, the previous holder keeps whatever they earned. Phase 2 (not built yet) adds Usurp Arena — a 60-second AI-judged duel mode.
 
 ## Tech Stack
 
@@ -16,8 +16,8 @@ USURP is a king-of-the-hill USDC game on Arc Testnet. Players pay USDC to steal 
 - Web3: wagmi v2, viem v2, ConnectKit
 - Contracts: Solidity 0.8.x + Foundry. Sources in `contracts/`, unit tests in `contracts/test/*.t.sol`. Build with `bun run contracts:build`, test with `bun run contracts:test`.
 - Wallet: injected (MetaMask, etc.) via wagmi
-- Chain: Arc Testnet (Chain ID: 5042002, imported from `viem/chains` as `arcTestnet`)
-- Token: USDC ERC-20, 6 decimals, address `0x3600000000000000000000000000000000000000` on Arc Testnet
+- Chain: Arc Mainnet (Chain ID: 5042) + Arc Testnet (Chain ID: 5042002) — mainnet is default via `VITE_NETWORK=mainnet`
+- Token: USDC ERC-20, 6 decimals, address `0x3600000000000000000000000000000000000000` on both Arc Mainnet and Arc Testnet
 - Theme: dark/light via CSS custom properties + `data-theme` on `<html>`, no-flash inline script in `index.html`
 - Fonts: Big Shoulders Display 800/900 (display), Plus Jakarta Sans 400/500/700/800 (body), JetBrains Mono 500/700 (mono)
 - Routing: hash-based (no library dependency), pages in `src/pages/`
@@ -39,7 +39,8 @@ USURP is a king-of-the-hill USDC game on Arc Testnet. Players pay USDC to steal 
 - `src/components/AgeGate.tsx` — age/disclaimer gate modal (focus-trapped)
 - `src/components/ThroneScreen.tsx` — main game view (crown hero, pot health, stats, feed, Arena teaser)
 - `src/pages/` — HowItWorksPage, FaqPage, DisclaimerPage, TermsPage, PrivacyPage, NotFoundPage
-- `src/config.ts` — wagmi config (Arc Testnet + mainnet for ENS)
+- `src/config.ts` — wagmi config (Arc Mainnet + Arc Testnet, network-aware via `VITE_NETWORK`)
+- `src/onchain-shim.ts` — standalone replacements for Arc Studio sandbox helpers (`getUsdc`, `requireChain`, `Amount`, `buildTxExplorerUrl`)
 - `docs/DECISIONS.md` — architecture decisions and open questions
 - `docs/DEPLOY.md` — deployment checklist (to be written in Milestone 8)
 
@@ -77,8 +78,10 @@ _(Previous deploys at 0x7eF500cAa... and 0x57334ec1... superseded.)_
 | 4 | Wallet + chain layer | **Done** |
 | 5 | Game wired to chain | **Done** |
 | 6 | Game feel: ring, confetti, shake, effects, history, streaks | **Done** |
-| 7 | Admin + safety: /admin, pause, timelocked changes, region restriction | **Done** |
+| 7 | Admin + safety: /admin, timelocked changes, region restriction | **Done** |
 | 8 | Polish: a11y pass, ErrorBoundary, README, docs | **Done** |
+| 9 | Mainnet deploy: contract + frontend pointed to Arc Mainnet, Vercel production | **Done** |
+| 10 | Post-launch fixes: hold timer guard, earnings ticker freeze, legal copy cleanup, pause removal, onchain-shim standalone build | **Done** |
 
 ## To Run
 
