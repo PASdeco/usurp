@@ -112,7 +112,7 @@ Fires on steal success and on first ring hit of 100%. Both can be disabled by th
 Derived from the last 2000 blocks of `Stolen` events. `useGameStats` computes:
 - Best hold = maximum hold duration across all steals (consecutive event timestamp differences).
 - 7-day streak = count of unique UTC calendar days (in the last 7) where the connected address appears as newHolder in a Stolen event.
-No indexer required for testnet. For mainnet production, swap `useGameFeed` to read from a Ponder or The Graph subgraph.
+No indexer required. `useGameFeed` now polls `getLogs` every 10 seconds (replacing `useWatchContractEvent` which used `eth_newFilter` — not supported on Arc RPC). For higher-frequency updates, swap to a Ponder or The Graph subgraph.
 
 ---
 
@@ -144,9 +144,24 @@ DEPLOY.md documents the Vercel deploy steps. The app is deployable to Netlify, H
 
 ---
 
+---
+
+## Post-launch decisions
+
+### D-21 · Pause feature removed from frontend
+
+The `pause()`/`unpause()` functions remain in the deployed contract but are no longer exposed in the frontend admin panel or reflected anywhere in the UI. Reason: the frontend's pause-freeze logic for the earnings ticker and hold timer was causing display bugs (drip kept updating from chain reads even when paused), and the operational need for pause is low given the timelock-protected parameters already limit emergency exposure. The contract-level pause is still available for the owner via direct contract interaction if needed.
+
+### D-22 · onchain-shim.ts: standalone Arc config helpers
+
+`src/onchain-shim.ts` replaces Arc Studio sandbox-only imports (`@/onchain-facts`, `@/onchain-money`) with standalone equivalents so the project builds in any environment. Hardcodes Arc Mainnet and Arc Testnet values (USDC address, chain config, explorer URLs, Amount conversion class). If Arc chain parameters ever change, update this file.
+
+### D-23 · eth_newFilter unsupported on Arc RPC
+
+Arc's public RPC does not support `eth_newFilter`. `useWatchContractEvent` (wagmi) uses this under the hood. Replaced with explicit `getLogs` polling every 10 seconds across `useGameFeed`. This is the correct pattern for Arc.
+
 ## Open Questions
 
-- OQ-01: Fee wallet address for the 50% builder split — placeholder in contract; must be set before any real funds.
-- OQ-02: Pot seed amount (TBD in spec §5) — "amount TBD, a parameter".
-- OQ-03: GenoLayer/AI panel integration for Arena — deferred to Phase 2, only a teaser in Milestone 1.
-- OQ-04: Region restriction list — to be determined before mainnet.
+- OQ-03: GenoLayer/AI panel integration for Arena — deferred to Phase 2.
+- OQ-04: Region restriction server-side layer — Vercel Edge Middleware not yet implemented (client-side only).
+- OQ-05: OG image PNG, favicon-32.png, apple-touch-icon.png — referenced in meta but not yet created as PNG files.
