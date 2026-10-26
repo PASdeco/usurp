@@ -20,7 +20,7 @@ import { useAdmin } from '../hooks/useAdmin'
 import { useWallet } from '../hooks/useWallet'
 import {
   IconShield, IconLoader, IconAlert,
-  IconSuccess, IconLock, IconTimer, IconInfo,
+  IconLock, IconTimer, IconInfo,
 } from '../components/icons'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -190,7 +190,6 @@ export function AdminPage() {
   const { isConnected } = useWallet()
   const {
     adminState,
-    pause, unpause,
     withdrawFees, seedPot,
     scheduleFeeAddress, applyFeeAddress,
     scheduleMinHold, applyMinHold,
@@ -306,37 +305,9 @@ export function AdminPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 20 }}>
             <Stat label="Pot balance" value={fmtUsdc(s.potBalanceUsdc)} />
             <Stat label="Fees accrued" value={fmtUsdc(s.feeAccruedUsdc)} />
-            <Stat label="Contract status" value={s.paused ? 'Paused' : 'Live'} />
             <Stat label="Your role" value={s.isOwner && s.isFeeAddress ? 'Owner + Fee' : s.isOwner ? 'Owner' : 'Fee address'} />
           </div>
         </Card>
-
-        {/* ── Pause / Unpause ────────────────────────────────────────────── */}
-        {s.isOwner && (
-          <Card title="Game control" accent={s.paused}>
-            <p style={{ margin: '0 0 16px', color: 'var(--ink-muted)', fontSize: 14 }}>
-              Pausing blocks <strong>steal</strong> and <strong>reset</strong> but never blocks <strong>claim</strong> — players can always withdraw earned funds.
-            </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {s.paused ? (
-                <ActionButton
-                  onClick={() => { void withLoading('unpause', unpause) }}
-                  loading={loading['unpause']}
-                >
-                  <IconSuccess size={15} /> Unpause game
-                </ActionButton>
-              ) : (
-                <ActionButton
-                  danger
-                  onClick={() => { void withLoading('pause', pause) }}
-                  loading={loading['pause']}
-                >
-                  <IconAlert size={15} /> Pause game
-                </ActionButton>
-              )}
-            </div>
-          </Card>
-        )}
 
         {/* ── Seed pot ───────────────────────────────────────────────────── */}
         {s.isOwner && (
