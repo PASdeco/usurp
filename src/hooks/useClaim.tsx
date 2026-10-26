@@ -1,6 +1,8 @@
 /**
  * useClaim — calls claim() on the Usurp contract.
- * Available even when the game is paused.
+ * Available to any address with pending earnings (current holder or dethroned player).
+ * No pause guard — claim is always callable regardless of game state.
+ * Explorer links use buildTxExplorerUrl(hash, chainId) from onchain-shim.
  */
 
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
