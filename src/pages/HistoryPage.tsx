@@ -7,7 +7,7 @@
 import { useMemo, useState } from 'react'
 import { useGame } from '../contexts/GameContext'
 import { useGameFeed } from '../hooks/useGameFeed'
-import { buildTxExplorerUrl } from '../onchain-facts'
+import { buildTxExplorerUrl } from '../onchain-shim'
 import { CHAIN_ID } from '../config'
 import { MOCK_MODE } from '../lib/mock'
 import { IconExternalLink, IconLoader } from '../components/icons'
@@ -80,7 +80,7 @@ function EventRow({ ev }: { ev: FeedEvent }) {
         {/* Explorer link */}
         {txHash && !MOCK_MODE && (
           <a
-            href={buildTxExplorerUrl(CHAIN_ID, txHash)}
+            href={buildTxExplorerUrl(txHash)}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', gap: 3 }}
