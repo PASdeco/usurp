@@ -80,7 +80,6 @@ Connect your wallet to **Arc Mainnet**:
 | **Owner** | `0xE3fd801A2939c636f2EA5c281A726Ea131799F12` |
 | **Fee address** | `0xBd87d93B45c017EFC656a1F78BA190c49e5e8673` |
 | **Status** | Deployed on Arc Mainnet |
-| **Audit** | Two-round security review; 66 unit + fuzz + invariant tests passing |
 
 ### Run contract tests
 
@@ -221,7 +220,6 @@ usurp/
 ## Docs
 
 - [Architecture](docs/ARCHITECTURE.md) — state machine, accrual math, component tree
-- [Security](docs/SECURITY.md) — threat model, bot analysis, top risks
 - [Decisions](docs/DECISIONS.md) — technical choices and open questions
 - [Deploy](docs/DEPLOY.md) — mainnet deployment guide
 - [Changelog](docs/CHANGELOG.md) — release history
