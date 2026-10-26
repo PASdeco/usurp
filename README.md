@@ -191,27 +191,6 @@ usurp/
     └── robots.txt
 ```
 
----
-
-## Environment variables
-
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_NETWORK` | Yes | `mainnet` for production, omit for testnet |
-| `VITE_MAINNET_CONTRACT_ADDRESS` | Yes (mainnet) | Mainnet contract address |
-| `VITE_CONTRACT_ADDRESS` | No | Testnet contract address fallback |
-| `VITE_WALLETCONNECT_PROJECT_ID` | Yes | WalletConnect project ID |
-| `VITE_MOCK_MODE` | No | `true` = use seeded mock state, no chain needed |
-| `VITE_BLOCKED_REGIONS` | No | Comma-separated ISO 3166-1 alpha-2 codes to block (e.g. `US,GB`) |
-| `PRIVATE_KEY` | Deploy only | Testnet deployer private key |
-| `FEE_ADDRESS` | Deploy only | Testnet fee wallet address |
-| `MAINNET_PRIVATE_KEY` | Deploy only | Mainnet deployer private key |
-| `MAINNET_FEE_ADDRESS` | Deploy only | Mainnet fee wallet address |
-
-Never commit any private key or fee address. They are excluded by `.gitignore`.
-
----
-
 ## Game mechanics
 
 | Parameter | Value |
