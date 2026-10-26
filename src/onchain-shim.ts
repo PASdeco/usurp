@@ -1,11 +1,13 @@
 /**
- * Standalone replacements for Arc Studio sandbox helpers.
- * Values are sourced from official Arc documentation.
+ * Standalone replacements for Arc Studio sandbox-only helpers.
+ * Values sourced from official Arc documentation — update here if they change.
  *
- * Arc Mainnet  (chain 5042):  USDC 0x3600000000000000000000000000000000000000, 6 decimals
- * Arc Testnet  (chain 5042002): USDC 0x3600000000000000000000000000000000000000, 6 decimals
- * Explorer mainnet: https://explorer.arc.io
- * Explorer testnet: https://explorer.testnet.arc.io
+ * Replaces: @/onchain-facts (getUsdc, requireChain), @/onchain-money (Amount)
+ *
+ * Arc Mainnet  (chain 5042):    USDC 0x3600...0000, 6 dec, explorer.arc.io
+ * Arc Testnet  (chain 5042002): USDC 0x3600...0000, 6 dec, explorer.testnet.arc.io
+ *
+ * buildTxExplorerUrl(txHash, chainId) — returns a link to the tx on the correct explorer.
  */
 
 const IS_MAINNET = (import.meta.env.VITE_NETWORK ?? 'mainnet') === 'mainnet'
