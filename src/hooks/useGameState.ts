@@ -9,7 +9,8 @@ import { useReadContract } from 'wagmi'
 import { useMemo } from 'react'
 import { CHAIN_ID } from '../config'
 import { USURP_ADDRESS, USURP_ABI } from '../lib/contract'
-import { usdcDecimalsFor, Amount } from '../onchain-money'
+import { usdcDecimalsFor } from '../onchain-shim'
+import { Amount } from '../onchain-shim'
 import type { GameState, PotHealth } from '../lib/mock'
 
 const USDC_DECIMALS = usdcDecimalsFor(CHAIN_ID)
